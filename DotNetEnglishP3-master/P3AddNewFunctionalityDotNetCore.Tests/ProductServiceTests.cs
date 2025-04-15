@@ -1,5 +1,6 @@
-﻿using Xunit;
-
+﻿using P3AddNewFunctionalityDotNetCore.Models.ViewModels;
+using Xunit;
+using P3AddNewFunctionalityDotNetCore.Models.Services;
 namespace P3AddNewFunctionalityDotNetCore.Tests
 {
     public class ProductServiceTests
@@ -10,17 +11,31 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         /// returns an expected value from a particular set of parameters
         /// </summary>
         [Fact]
-        public void ExampleMethod()
+        public void CheckProductModelErrors_ShouldReturn_MissingName_WhenNameIsNull()
         {
             // Arrange
+            var fakeLocalizer = new FakeLocalizer();
+            var productService = new ProductService(
+                cart: null,
+                productRepository: null,
+                orderRepository: null,
+                localizer: fakeLocalizer
+            );
+            var productVm = new ProductViewModel
+            {
+                Name = null,
+                Price = "10",
+                Stock = "5"
+            };
 
             // Act
-
+            var errors = productService.CheckProductModelErrors(productVm);
 
             // Assert
-            Assert.Equal(1, 1);
+            Assert.Contains("MissingName", errors);
         }
-
-        // TODO write test methods to ensure a correct coverage of all possibilities
     }
 }
+
+
+
