@@ -7,29 +7,29 @@ using Xunit;
 
 namespace P3AddNewFunctionalityDotNetCore.Tests
 {
-    
+    // Classe FakeLocalizer qui simule le Localizer (très simple)
+    // Elle permet de renvoyer un message d'erreur basique comme "MissingName"
     public class FakeLocalizer : IStringLocalizer<ProductService>
     {
-        public LocalizedString this[string name]
-            => new LocalizedString(name, name);
+        // Cette méthode retourne simplement la clé qu'on lui demande
+        public LocalizedString this[string name] => new LocalizedString(name, name);
 
-        public LocalizedString this[string name, params object[] arguments]
-            => new LocalizedString(name, name);
+        // Variante avec arguments (pas utilisée ici, mais nécessaire pour l'interface)
+        public LocalizedString this[string name, params object[] arguments] => new LocalizedString(name, name);
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
-            => new List<LocalizedString>();
+        // Méthode obligatoire mais inutile ici
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => new List<LocalizedString>();
 
-        public IStringLocalizer WithCulture(CultureInfo culture)
-            => this;
+        public IStringLocalizer WithCulture(CultureInfo culture) => this;
     }
 
+    // Classe qui contient tous nos tests unitaires
     public class ProductServiceTests
     {
+        // Méthode qui nous permet de créer facilement un ProductService pour les tests
         private ProductService CreateProductService()
         {
-            
             var fakeLocalizer = new FakeLocalizer();
-
             return new ProductService(
                 cart: null,
                 productRepository: null,
@@ -38,136 +38,88 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             );
         }
 
+        // Premier test : vérifier que le champ Name est obligatoire
         [Fact]
-        public void testl()
+        public void Test_Nom()
         {
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = null,
-                Price = "10",
-                Stock = "5"
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = null, Price = "10", Stock = "5" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("MissingName", errors);
+            Assert.Contains("MissingName", erreurs);
         }
 
+        // Deuxième test : vérifier que le champ Prix est obligatoire
         [Fact]
-        public void CheckProductModelErrors_ShouldReturn_MissingPrice_WhenPriceIsEmpty()
+        public void Test_PrixObligatoire()
         {
-            // Arrange
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = "TestProduct",
-                Price = "", 
-                Stock = "5"
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = "ProduitTest", Price = "", Stock = "5" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("MissingPrice", errors);
+            Assert.Contains("MissingPrice", erreurs);
         }
 
+        // Troisième test : le prix doit être un nombre
         [Fact]
-        public void CheckProductModelErrors_ShouldReturn_PriceNotANumber_WhenPriceIsInvalidString()
+        public void Test_PrixDoitEtreUnNombre()
         {
-            // Arrange
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = "TestProduct",
-                Price = "abc", 
-                Stock = "5"
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = "ProduitTest", Price = "abc", Stock = "5" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("PriceNotANumber", errors);
+            Assert.Contains("PriceNotANumber", erreurs);
         }
 
+        //  le prix doit être supérieur à zéro
         [Fact]
-        public void CheckProductModelErrors_ShouldReturn_PriceNotGreaterThanZero_WhenPriceIsZeroOrNegative()
+        public void Test_PrixSuperieurAZero()
         {
-            // Arrange
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = "TestProduct",
-                Price = "0", 
-                Stock = "5"
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = "ProduitTest", Price = "0", Stock = "5" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("PriceNotGreaterThanZero", errors);
+            Assert.Contains("PriceNotGreaterThanZero", erreurs);
         }
 
+        // quantité  obligatoire
         [Fact]
-        public void CheckProductModelErrors_ShouldReturn_MissingQuantity_WhenStockIsEmpty()
+        public void Test_Quantite()
         {
-            // Arrange
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = "TestProduct",
-                Price = "10",
-                Stock = "" 
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = "ProduitTest", Price = "10", Stock = "" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("MissingQuantity", errors);
+            Assert.Contains("MissingQuantity", erreurs);
         }
 
+        // la quantité doit être chiffre un entier
         [Fact]
-        public void CheckProductModelErrors_ShouldReturn_StockNotAnInteger_WhenStockIsInvalidString()
+        public void Test_QuantiteEntier()
         {
-            // Arrange
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = "TestProduct",
-                Price = "10",
-                Stock = "abc" 
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = "ProduitTest", Price = "10", Stock = "abc" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("StockNotAnInteger", errors);
+            Assert.Contains("StockNotAnInteger", erreurs);
         }
 
+        // la quantité doit être supérieure à zéro
         [Fact]
-        public void CheckProductModelErrors_ShouldReturn_StockNotGreaterThanZero_WhenStockIsZeroOrNegative()
+        public void Test_QuantiteSuperieureAZero()
         {
-            // Arrange
-            var productService = CreateProductService();
-            var productVm = new ProductViewModel
-            {
-                Name = "TestProduct",
-                Price = "10",
-                Stock = "0" 
-            };
+            var service = CreateProductService();
+            var produit = new ProductViewModel { Name = "ProduitTest", Price = "10", Stock = "0" };
 
-            // Act
-            var errors = productService.CheckProductModelErrors(productVm);
+            var erreurs = service.CheckProductModelErrors(produit);
 
-            // Assert
-            Assert.Contains("StockNotGreaterThanZero", errors);
+            Assert.Contains("StockNotGreaterThanZero", erreurs);
         }
     }
 }
