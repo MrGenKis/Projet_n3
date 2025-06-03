@@ -52,7 +52,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
         // Deuxième test : vérifier que le champ Prix est obligatoire
         [Fact]
-        public void Test_PrixObligatoire()
+        public void Test_Prix()
         {
             var service = CreateProductService();
             var produit = new ProductViewModel { Name = "ProduitTest", Price = "", Stock = "5" };
@@ -64,7 +64,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
         // Troisième test : le prix doit être un nombre
         [Fact]
-        public void Test_PrixDoitEtreUnNombre()
+        public void Test_PrixNombre()
         {
             var service = CreateProductService();
             var produit = new ProductViewModel { Name = "ProduitTest", Price = "abc", Stock = "5" };
@@ -100,7 +100,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
         // la quantité doit être chiffre un entier
         [Fact]
-        public void Test_QuantiteEntier()
+        public void Test_QuantiteNombre()
         {
             var service = CreateProductService();
             var produit = new ProductViewModel { Name = "ProduitTest", Price = "10", Stock = "abc" };
