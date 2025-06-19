@@ -1,4 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using P3AddNewFunctionalityDotNetCore.Data;
@@ -7,12 +12,6 @@ using P3AddNewFunctionalityDotNetCore.Models.Entities;
 using P3AddNewFunctionalityDotNetCore.Models.Repositories;
 using P3AddNewFunctionalityDotNetCore.Models.Services;
 using P3AddNewFunctionalityDotNetCore.Models.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using Xunit;
 
 namespace P3AddNewFunctionalityDotNetCore.Tests.Integration
@@ -27,25 +26,24 @@ namespace P3AddNewFunctionalityDotNetCore.Tests.Integration
 
     public class ProductIntegrationTests
     {
-      
+        private const string ConnectionString =
+            @"Server=.\SQLEXPRESS;Database=P3ReferentialTest;Trusted_Connection=True;MultipleActiveResultSets=true";
+
         private static ProductService BuildService()
         {
-            const string connectionString =
-                @"Server=(localdb)\mssqllocaldb;Database=P3ReferentialTest;Trusted_Connection=True;MultipleActiveResultSets=true";
-
             var options = new DbContextOptionsBuilder<P3Referential>()
-                          .UseSqlServer(connectionString)
+                          .UseSqlServer(ConnectionString)
                           .Options;
 
             var config = new ConfigurationBuilder()
                          .AddInMemoryCollection(new Dictionary<string, string>
                          {
-                             ["ConnectionStrings:P3Referential"] = connectionString
+                             ["ConnectionStrings:P3Referential"] = ConnectionString
                          })
                          .Build();
 
             var context = new P3Referential(options, config);
-            context.Database.EnsureCreated(); // crée la BDD si nécessaire
+            context.Database.EnsureCreated();
 
             var cart = new Cart();
             var productRepo = new ProductRepository(context);
@@ -61,31 +59,31 @@ namespace P3AddNewFunctionalityDotNetCore.Tests.Integration
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
         }
 
-        [Fact]
-        public void AjouterProduit_Et_Verifier_Presence_Dans_Liste()
+        [Fact(DisplayName = "Ajout côté admin : le produit est visible côté client")]
+        public void AjouterProduit_Et_Verifier_Presence_CoteClient()
         {
             // Arrange
             SetInvariantCulture();
             var service = BuildService();
+            var uniqueName = "Produit_" + Guid.NewGuid().ToString("N");
 
             var produitTest = new ProductViewModel
             {
-                Name = "ProduitIntegrationTestFinal",
-                Price = "15.99",   // séparateur « . » accepté grâce à InvariantCulture
+                Name = uniqueName,
+                Price = "15.99",
                 Stock = "10",
-                Description = "Produit d'intégration",
-                Details = "Test automatique"
+                Description = "Ajout test",
+                Details = "Ajout d’un produit via test"
             };
 
             // Act
             service.SaveProduct(produitTest);
 
-            var produit = service.GetAllProductsViewModel()
-                                 .FirstOrDefault(p => p.Name == "ProduitIntegrationTestFinal");
-
             // Assert
+            var produit = service.GetAllProductsViewModel()
+                                 .FirstOrDefault(p => p.Name == uniqueName);
+
             Assert.NotNull(produit);
-            Assert.Equal("ProduitIntegrationTestFinal", produit.Name);
             Assert.Equal("10", produit.Stock);
             Assert.Equal("15.99", produit.Price);
 
@@ -93,27 +91,29 @@ namespace P3AddNewFunctionalityDotNetCore.Tests.Integration
             service.DeleteProduct(produit.Id);
         }
 
-        [Fact]
-        public void SupprimerProduit_Et_Verifier_Absence()
+        [Fact(DisplayName = "Suppression côté admin : le produit n’est plus visible côté client")]
+        public void SupprimerProduit_Et_Verifier_Absence_CoteClient()
         {
             // Arrange
             SetInvariantCulture();
             var service = BuildService();
+            var uniqueName = "Produit_" + Guid.NewGuid().ToString("N");
 
             var produitTest = new ProductViewModel
             {
-                Name = "ProduitIntegrationASupprimer",
+                Name = uniqueName,
                 Price = "9.99",
                 Stock = "5",
-                Description = "Produit à supprimer",
-                Details = "Test suppression"
+                Description = "Suppression test",
+                Details = "Produit à supprimer"
             };
 
             service.SaveProduct(produitTest);
 
             var produit = service.GetAllProductsViewModel()
-                                 .FirstOrDefault(p => p.Name == "ProduitIntegrationASupprimer");
-            Assert.NotNull(produit); // vérifie que l’ajout a réussi
+                                 .FirstOrDefault(p => p.Name == uniqueName);
+
+            Assert.NotNull(produit);
 
             // Act
             service.DeleteProduct(produit.Id);

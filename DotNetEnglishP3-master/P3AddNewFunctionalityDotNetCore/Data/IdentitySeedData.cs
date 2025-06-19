@@ -25,3 +25,7 @@ namespace P3AddNewFunctionalityDotNetCore.Data
         }
     }
 }
+
+/* test unitaire = appelle a une methode fonctionne 
+ * test d'integration = un test qui va
+ */

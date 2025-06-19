@@ -7,26 +7,20 @@ using Xunit;
 
 namespace P3AddNewFunctionalityDotNetCore.Tests
 {
-    // Classe FakeLocalizer qui simule le Localizer (très simple)
-    // Elle permet de renvoyer un message d'erreur basique comme "MissingName"
     public class FakeLocalizer : IStringLocalizer<ProductService>
     {
-        // Cette méthode retourne simplement la clé qu'on lui demande
+      
         public LocalizedString this[string name] => new LocalizedString(name, name);
 
-        // Variante avec arguments (pas utilisée ici, mais nécessaire pour l'interface)
         public LocalizedString this[string name, params object[] arguments] => new LocalizedString(name, name);
 
-        // Méthode obligatoire mais inutile ici
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => new List<LocalizedString>();
 
         public IStringLocalizer WithCulture(CultureInfo culture) => this;
     }
 
-    // Classe qui contient tous nos tests unitaires
     public class ProductServiceTests
     {
-        // Méthode qui nous permet de créer facilement un ProductService pour les tests
         private ProductService CreateProductService()
         {
             var fakeLocalizer = new FakeLocalizer();
